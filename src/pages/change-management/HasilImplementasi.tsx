@@ -1,0 +1,64 @@
+import TableWithSearch from "@/components/TableWithSearch";
+import ActionMenu from "@/components/ActionMenu";
+
+const HasilImplementasi = () => {
+  const results = [
+    {
+      id: "CHG-001",
+      title: "Server Infrastructure Update",
+      date: "2025-01-15",
+      pic: "John Doe",
+      status: "Success",
+      notes: "Implementation completed successfully",
+    },
+  ];
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-text-dark mb-6">Hasil Implementasi</h1>
+
+      <TableWithSearch searchPlaceholder="Cari hasil...">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-primary text-primary-foreground">
+                <th className="px-4 py-4 text-left font-semibold text-sm">Request ID</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">Judul</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">Tanggal Implementasi</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">PIC</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">Status</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">Catatan</th>
+                <th className="px-4 py-4 text-left font-semibold text-sm">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((result) => (
+                <tr key={result.id} className="border-b border-border">
+                  <td className="px-4 py-4 text-foreground font-medium text-sm">{result.id}</td>
+                  <td className="px-4 py-4 text-foreground text-sm">{result.title}</td>
+                  <td className="px-4 py-4 text-foreground text-sm">{result.date}</td>
+                  <td className="px-4 py-4 text-foreground text-sm">{result.pic}</td>
+                  <td className="px-4 py-4 text-sm">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {result.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-foreground text-sm">{result.notes}</td>
+                  <td className="px-4 py-4">
+                    <ActionMenu
+                      itemId={result.id}
+                      detailPath={`/change-management/detail/${result.id}`}
+                      historyPath={`/change-management/history/${result.id}`}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </TableWithSearch>
+    </div>
+  );
+};
+
+export default HasilImplementasi;
