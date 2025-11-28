@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info, Check } from "lucide-react";
 import { useState } from "react";
 
 const ChangeRequestDetail = () => {
@@ -17,50 +17,44 @@ const ChangeRequestDetail = () => {
     bmdId: "BMD-001",
     nama: "Update Server Configuration",
     asetTerdampak: [
-      "Server Dell PowerEdge R740 (BMD-001)",
-      "Network Switch Cisco Catalyst (BMD-045)",
-      "Storage Array NetApp (BMD-089)"
+      { bmdId: "BMD-001", nama: "Server Dell PowerEdge R740" },
+      { bmdId: "BMD-045", nama: "Network Switch Cisco Catalyst" },
+      { bmdId: "BMD-089", nama: "Storage Array NetApp" },
     ],
     catatan: "Perubahan konfigurasi untuk meningkatkan performa dan keamanan server production.",
+    idInspeksi: "INS-2024-001",
+    tanggalInspeksi: "2024-01-16",
+    hasilInspeksiText: "Perlu dilakukan update sistem operasi dan patch keamanan",
     skorDampak: 7,
-    skorKemungkinan: 5,
-    skorRisiko: 35,
-    skor: 87,
-    estimasiBiaya: "Rp 15.000.000",
+    skorKemungkinan: 6,
+    skorExposure: 8,
+    skorRisiko: 42,
+    estimasiBiaya: "Rp 5.000.000",
     estimasiWaktu: "4 jam",
     hasilInspeksi: null,
-    persetujuan: "approved",
+    currentStatus: "Approved",
     jadwalImplementasi: {
       tanggal: "20 Januari 2025",
       waktu: "14:00 - 18:00"
     }
   };
 
-  const getApprovalStyle = () => {
-    switch (changeRequest.persetujuan) {
-      case "approved":
-        return "bg-green-100 text-green-800 border-green-300";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
-      case "revision":
-        return "bg-red-100 text-red-800 border-red-300";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
-    }
+  const statusSteps = [
+    { key: "Submitted", label: "Submitted" },
+    { key: "Reviewed", label: "Reviewed" },
+    { key: "Revision", label: "Revision" },
+    { key: "Approved", label: "Approved" },
+    { key: "Scheduled", label: "Scheduled" },
+    { key: "Implementing", label: "Implementing" },
+    { key: "Completed", label: "Completed" },
+    { key: "End", label: "End" },
+  ];
+
+  const getCurrentStepIndex = () => {
+    return statusSteps.findIndex(step => step.key === changeRequest.currentStatus);
   };
 
-  const getApprovalText = () => {
-    switch (changeRequest.persetujuan) {
-      case "approved":
-        return "Persetujuan Diterima";
-      case "pending":
-        return "Menunggu Persetujuan";
-      case "revision":
-        return "Perlu Perbaikan untuk Persetujuan";
-      default:
-        return "Status Tidak Diketahui";
-    }
-  };
+  const currentStepIndex = getCurrentStepIndex();
 
   return (
     <div>
@@ -98,18 +92,32 @@ const ChangeRequestDetail = () => {
             </div>
           </div>
 
+          {/* Aset Terdampak - Collapsible Table */}
           <div className="mt-4">
             <Collapsible open={isAffectedOpen} onOpenChange={setIsAffectedOpen}>
               <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary">
-                Aset Terdampak
+                Aset Terdampak ({changeRequest.asetTerdampak.length})
                 <ChevronDown className={`h-4 w-4 transition-transform ${isAffectedOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
-                  {changeRequest.asetTerdampak.map((asset, index) => (
-                    <li key={index}>{asset}</li>
-                  ))}
-                </ul>
+              <CollapsibleContent className="mt-3">
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-muted">
+                        <th className="px-4 py-2 text-left text-sm font-medium text-foreground">BMD ID</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-foreground">Nama Aset</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {changeRequest.asetTerdampak.map((asset, index) => (
+                        <tr key={index} className="border-t border-border">
+                          <td className="px-4 py-2 text-sm text-foreground">{asset.bmdId}</td>
+                          <td className="px-4 py-2 text-sm text-foreground">{asset.nama}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CollapsibleContent>
             </Collapsible>
           </div>
@@ -123,34 +131,58 @@ const ChangeRequestDetail = () => {
         {/* Section 2: Hasil Inspeksi */}
         <Card className="p-6 bg-card border-border">
           <h2 className="text-xl font-semibold text-foreground mb-4">Hasil Inspeksi</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          
+          {/* ID dan Tanggal Inspeksi */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Skor Dampak</label>
-              <p className="text-2xl font-bold text-foreground mt-1">{changeRequest.skorDampak}</p>
+              <label className="text-sm font-medium text-muted-foreground">ID Inspeksi</label>
+              <p className="text-base text-foreground mt-1">{changeRequest.idInspeksi}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Skor Kemungkinan</label>
-              <p className="text-2xl font-bold text-foreground mt-1">{changeRequest.skorKemungkinan}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Skor Risiko</label>
-              <p className="text-2xl font-bold text-foreground mt-1">{changeRequest.skorRisiko}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Skor Total</label>
-              <p className="text-2xl font-bold text-primary mt-1">{changeRequest.skor}</p>
+              <label className="text-sm font-medium text-muted-foreground">Tanggal Inspeksi</label>
+              <p className="text-base text-foreground mt-1">{changeRequest.tanggalInspeksi}</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+
+          {/* Hasil Inspeksi Text */}
+          <div className="mb-6">
+            <label className="text-sm font-medium text-muted-foreground">Hasil Inspeksi</label>
+            <p className="text-base text-foreground mt-1">{changeRequest.hasilInspeksiText}</p>
+          </div>
+
+          {/* Skor Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="border border-border rounded-lg p-4">
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Skor Dampak</label>
+              <p className="text-2xl font-bold text-foreground">{changeRequest.skorDampak}</p>
+            </div>
+            <div className="border border-border rounded-lg p-4">
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Skor Kemungkinan</label>
+              <p className="text-2xl font-bold text-foreground">{changeRequest.skorKemungkinan}</p>
+            </div>
+            <div className="border border-border rounded-lg p-4">
+              <label className="text-xs font-medium text-muted-foreground block mb-1">Skor Exposure</label>
+              <p className="text-2xl font-bold text-foreground">{changeRequest.skorExposure}</p>
+            </div>
+            {/* Highlighted Skor Resiko */}
+            <div className="border-2 border-red-200 bg-red-50 rounded-lg p-4">
+              <label className="text-xs font-medium text-red-600 block mb-1">Skor Resiko (Exposure)</label>
+              <p className="text-2xl font-bold text-red-600">{changeRequest.skorRisiko}</p>
+            </div>
+          </div>
+
+          {/* Estimasi */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Estimasi Biaya</label>
               <p className="text-base text-foreground mt-1">{changeRequest.estimasiBiaya}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Estimasi Waktu Pengerjaan</label>
+              <label className="text-sm font-medium text-muted-foreground">Estimasi Pengerjaan</label>
               <p className="text-base text-foreground mt-1">{changeRequest.estimasiWaktu}</p>
             </div>
           </div>
+
           {changeRequest.hasilInspeksi && (
             <div className="mt-4">
               <label className="text-sm font-medium text-muted-foreground">Hasil Inspeksi (Foto)</label>
@@ -161,10 +193,14 @@ const ChangeRequestDetail = () => {
           )}
         </Card>
 
-        {/* Section 3: Persetujuan */}
-        <Card className={`p-6 border-2 ${getApprovalStyle()}`}>
-          <h2 className="text-xl font-semibold mb-2">Persetujuan</h2>
-          <p className="text-lg font-medium">{getApprovalText()}</p>
+        {/* Section 3: Persetujuan - Formal Style */}
+        <Card className="p-4 bg-blue-50 border border-blue-200">
+          <div className="flex items-center gap-3">
+            <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
+            <p className="text-sm text-blue-700">
+              Semua perubahan pada desain ini memerlukan persetujuan terpisah.
+            </p>
+          </div>
         </Card>
 
         {/* Section 4: Jadwal Implementasi */}
@@ -182,15 +218,51 @@ const ChangeRequestDetail = () => {
           </div>
         </Card>
 
-        {/* Section 5: Action Button */}
-        <div className="flex justify-end">
-          <Button 
-            className="bg-[#384E66] hover:bg-[#2F4256] text-white"
-            onClick={() => navigate(`/cmdb/edit/${changeRequest.bmdId}`)}
-          >
-            Perbarui Data Aset
-          </Button>
-        </div>
+        {/* Section 5: Status Tracking */}
+        <Card className="p-6 bg-card border-border">
+          <h2 className="text-xl font-semibold text-foreground mb-6">Tracking Status</h2>
+          <div className="relative">
+            {/* Progress Line */}
+            <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
+            <div 
+              className="absolute top-4 left-0 h-0.5 bg-primary transition-all duration-300"
+              style={{ width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }}
+            />
+            
+            {/* Steps */}
+            <div className="relative flex justify-between">
+              {statusSteps.map((step, index) => {
+                const isCompleted = index <= currentStepIndex;
+                const isCurrent = index === currentStepIndex;
+                
+                return (
+                  <div key={step.key} className="flex flex-col items-center">
+                    <div 
+                      className={`
+                        w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium z-10
+                        ${isCompleted 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted text-muted-foreground border-2 border-border'
+                        }
+                        ${isCurrent ? 'ring-2 ring-primary ring-offset-2' : ''}
+                      `}
+                    >
+                      {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
+                    </div>
+                    <span 
+                      className={`
+                        mt-2 text-xs font-medium text-center max-w-[80px]
+                        ${isCompleted ? 'text-primary' : 'text-muted-foreground'}
+                      `}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
