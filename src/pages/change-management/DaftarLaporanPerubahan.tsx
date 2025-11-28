@@ -1,5 +1,13 @@
 import TableWithSearch from "@/components/TableWithSearch";
 import { useNavigate } from "react-router-dom";
+import { MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const DaftarLaporanPerubahan = () => {
   const navigate = useNavigate();
@@ -48,23 +56,30 @@ const DaftarLaporanPerubahan = () => {
     return statusColors[status] || "bg-gray-100 text-gray-800";
   };
 
+  const getScoreColor = (skor: number) => {
+    if (skor >= 80) return "bg-red-500 text-white";
+    if (skor >= 60) return "bg-orange-500 text-white";
+    if (skor >= 40) return "bg-yellow-500 text-white";
+    return "bg-green-500 text-white";
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-foreground mb-6">Daftar Laporan Perubahan</h1>
 
       <TableWithSearch searchPlaceholder="Cari laporan...">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead>
-              <tr className="bg-[#384E66] text-white">
-                <th className="px-4 py-4 text-left font-semibold text-sm">CR ID</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Katalog</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Sub Katalog</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Nama Aset</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Status</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Skor</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Tanggal Diterima</th>
-                <th className="px-4 py-4 text-left font-semibold text-sm">Aksi</th>
+              <tr className="bg-primary text-primary-foreground">
+                <th className="w-[100px] px-4 py-4 text-left font-semibold text-sm">CR ID</th>
+                <th className="w-[120px] px-4 py-4 text-left font-semibold text-sm">Katalog</th>
+                <th className="w-[120px] px-4 py-4 text-left font-semibold text-sm">Sub Katalog</th>
+                <th className="w-auto px-4 py-4 text-left font-semibold text-sm">Nama Aset</th>
+                <th className="w-[120px] px-4 py-4 text-left font-semibold text-sm">Status</th>
+                <th className="w-[80px] px-4 py-4 text-center font-semibold text-sm">Skor</th>
+                <th className="w-[140px] px-4 py-4 text-left font-semibold text-sm">Tanggal Diterima</th>
+                <th className="w-[60px] px-4 py-4 text-center font-semibold text-sm">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -73,21 +88,40 @@ const DaftarLaporanPerubahan = () => {
                   <td className="px-4 py-4 text-foreground font-medium text-sm">{change.id}</td>
                   <td className="px-4 py-4 text-foreground text-sm">{change.katalog}</td>
                   <td className="px-4 py-4 text-foreground text-sm">{change.subKatalog}</td>
-                  <td className="px-4 py-4 text-foreground text-sm">{change.nama}</td>
+                  <td className="px-4 py-4 text-foreground text-sm truncate">{change.nama}</td>
                   <td className="px-4 py-4 text-sm">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(change.status)}`}>
                       {change.status}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-foreground font-semibold text-sm">{change.skor}</td>
+                  <td className="px-4 py-4 text-center">
+                    <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold ${getScoreColor(change.skor)}`}>
+                      {change.skor}
+                    </span>
+                  </td>
                   <td className="px-4 py-4 text-foreground text-sm">{change.tanggalDiterima}</td>
-                  <td className="px-4 py-4">
-                    <button
-                      onClick={() => navigate(`/change-management/detail/${change.id}`)}
-                      className="text-primary hover:underline text-sm font-medium"
-                    >
-                      Detail
-                    </button>
+                  <td className="px-4 py-4 text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-card border-border">
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/change-management/detail/${change.id}`)}
+                          className="cursor-pointer hover:bg-muted"
+                        >
+                          Detail
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/change-management/hasil-implementasi`)}
+                          className="cursor-pointer hover:bg-muted"
+                        >
+                          Hasil Implementasi
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
